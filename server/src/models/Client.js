@@ -38,7 +38,7 @@ class Client {
     }
   }
 
-  static update(id, { code, name }) {
+  static update(id, { code, name, currentCounter }) {
     const client = this.getById(id);
     if (!client) {
       throw new Error('Client not found');
@@ -46,15 +46,16 @@ class Client {
 
     const upperCode = code ? code.toUpperCase() : client.code;
     const updatedName = name || client.name;
+    const updatedCounter = currentCounter !== undefined ? currentCounter : client.current_counter;
 
     const stmt = db.prepare(`
       UPDATE clients
-      SET code = ?, name = ?, updated_at = CURRENT_TIMESTAMP
+      SET code = ?, name = ?, current_counter = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
     try {
-      stmt.run(upperCode, updatedName, id);
+      stmt.run(upperCode, updatedName, updatedCounter, id);
       return this.getById(id);
     } catch (error) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -110,8 +111,15 @@ class Client {
       `);
       updateStmt.run(nextSequence, id);
 
-      // Generate and return claimed job number
+      // Generate job number
       const jobNumber = `${client.code}-${String(nextSequence).padStart(3, '0')}`;
+
+      // Log the claim
+      const logStmt = db.prepare(`
+        INSERT INTO claim_log (client_id, job_number, sequence_number)
+        VALUES (?, ?, ?)
+      `);
+      logStmt.run(id, jobNumber, nextSequence);
 
       return {
         jobNumber,

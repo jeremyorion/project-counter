@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import clientRoutes from './routes/clients.js';
 import projectRoutes from './routes/projects.js';
+import claimLogRoutes from './routes/claimLog.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +36,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/clients', clientRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/claim-log', claimLogRoutes);
 
 // 404 handler
 app.use((req, res) => {

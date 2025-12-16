@@ -3,7 +3,8 @@ import { useState } from 'react';
 export default function ClientForm({ client, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
     code: client?.code || '',
-    name: client?.name || ''
+    name: client?.name || '',
+    currentCounter: client?.current_counter || 0
   });
   const [errors, setErrors] = useState({});
 
@@ -22,6 +23,10 @@ export default function ClientForm({ client, onSubmit, onCancel }) {
       newErrors.name = 'Client name is required';
     }
 
+    if (client && formData.currentCounter < 0) {
+      newErrors.currentCounter = 'Last job number cannot be negative';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -29,10 +34,17 @@ export default function ClientForm({ client, onSubmit, onCancel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      onSubmit({
+      const submitData = {
         code: formData.code.toUpperCase(),
         name: formData.name.trim()
-      });
+      };
+
+      // Only include currentCounter when editing
+      if (client) {
+        submitData.currentCounter = parseInt(formData.currentCounter);
+      }
+
+      onSubmit(submitData);
     }
   };
 
@@ -83,6 +95,27 @@ export default function ClientForm({ client, onSubmit, onCancel }) {
         />
         {errors.name && <div className="error">{errors.name}</div>}
       </div>
+
+      {client && (
+        <div className="form-group">
+          <label htmlFor="currentCounter">
+            Last Job Number
+          </label>
+          <input
+            type="number"
+            id="currentCounter"
+            name="currentCounter"
+            value={formData.currentCounter}
+            onChange={handleChange}
+            min="0"
+            placeholder="0"
+          />
+          {errors.currentCounter && <div className="error">{errors.currentCounter}</div>}
+          <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.25rem' }}>
+            The last claimed job number. Next will be {formData.currentCounter ? parseInt(formData.currentCounter) + 1 : 1} ({formData.code || 'XXX'}-{String((formData.currentCounter ? parseInt(formData.currentCounter) : 0) + 1).padStart(3, '0')})
+          </div>
+        </div>
+      )}
 
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>

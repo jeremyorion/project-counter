@@ -86,6 +86,7 @@ export const useClaimJobNumber = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['claim-log'] });
     }
   });
 };

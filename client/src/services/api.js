@@ -46,4 +46,9 @@ export const projectsApi = {
   getRecent: (limit = 5) => api.get('/projects/recent', { params: { limit } })
 };
 
+// Claim Log API
+export const claimLogApi = {
+  getAll: (params) => api.get('/claim-log', { params })
+};
+
 export default api;
