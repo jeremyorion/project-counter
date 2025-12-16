@@ -75,3 +75,17 @@ export const useNextJobNumber = (clientId) => {
     enabled: !!clientId
   });
 };
+
+export const useClaimJobNumber = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id) => {
+      const response = await clientsApi.claimJobNumber(id);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+    }
+  });
+};

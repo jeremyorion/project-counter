@@ -173,4 +173,28 @@ router.get(
   }
 );
 
+// POST /api/clients/:id/claim-job-number - Claim and increment job number
+router.post(
+  '/:id/claim-job-number',
+  param('id').isInt(),
+  handleValidationErrors,
+  (req, res) => {
+    try {
+      const result = Client.claimJobNumber(req.params.id);
+      res.json({
+        success: true,
+        data: result,
+        error: null
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('not found') ? 404 : 500;
+      res.status(statusCode).json({
+        success: false,
+        data: null,
+        error: { message: error.message }
+      });
+    }
+  }
+);
+
 export default router;

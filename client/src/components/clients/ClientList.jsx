@@ -1,4 +1,4 @@
-export default function ClientList({ clients, onEdit, onDelete }) {
+export default function ClientList({ clients, onEdit, onDelete, onClaim }) {
   if (clients.length === 0) {
     return (
       <div className="empty-state">
@@ -14,9 +14,8 @@ export default function ClientList({ clients, onEdit, onDelete }) {
         <tr>
           <th>Code</th>
           <th>Name</th>
-          <th>Projects</th>
           <th>Next Job Number</th>
-          <th style={{ width: '150px' }}>Actions</th>
+          <th style={{ width: '280px' }}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -26,12 +25,17 @@ export default function ClientList({ clients, onEdit, onDelete }) {
               <strong>{client.code}</strong>
             </td>
             <td>{client.name}</td>
-            <td>{client.project_count}</td>
             <td style={{ color: 'var(--gray-600)', fontSize: '0.8125rem' }}>
-              {client.code}-{String(client.current_counter + 1).padStart(3, '0')}
+              <strong>{client.code}-{String(client.current_counter + 1).padStart(3, '0')}</strong>
             </td>
             <td>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={() => onClaim(client)}
+                >
+                  Claim Job Number
+                </button>
                 <button
                   className="btn btn-sm btn-secondary"
                   onClick={() => onEdit(client)}

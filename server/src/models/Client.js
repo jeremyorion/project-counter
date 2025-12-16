@@ -3,26 +3,18 @@ import db from '../db/database.js';
 class Client {
   static getAll() {
     const stmt = db.prepare(`
-      SELECT
-        c.*,
-        COUNT(p.id) as project_count
-      FROM clients c
-      LEFT JOIN projects p ON c.id = p.client_id
-      GROUP BY c.id
-      ORDER BY c.name ASC
+      SELECT *
+      FROM clients
+      ORDER BY name ASC
     `);
     return stmt.all();
   }
 
   static getById(id) {
     const stmt = db.prepare(`
-      SELECT
-        c.*,
-        COUNT(p.id) as project_count
-      FROM clients c
-      LEFT JOIN projects p ON c.id = p.client_id
-      WHERE c.id = ?
-      GROUP BY c.id
+      SELECT *
+      FROM clients
+      WHERE id = ?
     `);
     return stmt.get(id);
   }
@@ -78,10 +70,6 @@ class Client {
       throw new Error('Client not found');
     }
 
-    if (client.project_count > 0) {
-      throw new Error(`Cannot delete client with existing projects. This client has ${client.project_count} project(s).`);
-    }
-
     const stmt = db.prepare('DELETE FROM clients WHERE id = ?');
     stmt.run(id);
     return { message: 'Client deleted successfully' };
@@ -101,6 +89,37 @@ class Client {
       sequenceNumber: nextSequence,
       clientCode: client.code
     };
+  }
+
+  static claimJobNumber(id) {
+    return db.transaction(() => {
+      // Get current client
+      const getStmt = db.prepare('SELECT * FROM clients WHERE id = ?');
+      const client = getStmt.get(id);
+
+      if (!client) {
+        throw new Error('Client not found');
+      }
+
+      // Increment counter
+      const nextSequence = client.current_counter + 1;
+      const updateStmt = db.prepare(`
+        UPDATE clients
+        SET current_counter = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      updateStmt.run(nextSequence, id);
+
+      // Generate and return claimed job number
+      const jobNumber = `${client.code}-${String(nextSequence).padStart(3, '0')}`;
+
+      return {
+        jobNumber,
+        sequenceNumber: nextSequence,
+        clientCode: client.code,
+        clientName: client.name
+      };
+    })();
   }
 }
 

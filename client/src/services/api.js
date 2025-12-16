@@ -31,7 +31,8 @@ export const clientsApi = {
   create: (data) => api.post('/clients', data),
   update: (id, data) => api.put(`/clients/${id}`, data),
   delete: (id) => api.delete(`/clients/${id}`),
-  getNextJobNumber: (id) => api.get(`/clients/${id}/next-job-number`)
+  getNextJobNumber: (id) => api.get(`/clients/${id}/next-job-number`),
+  claimJobNumber: (id) => api.post(`/clients/${id}/claim-job-number`)
 };
 
 // Project API

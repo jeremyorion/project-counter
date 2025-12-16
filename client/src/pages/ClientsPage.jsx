@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '../hooks/useClients';
+import { useClients, useCreateClient, useUpdateClient, useDeleteClient, useClaimJobNumber } from '../hooks/useClients';
 import ClientList from '../components/clients/ClientList';
 import ClientModal from '../components/clients/ClientModal';
 
@@ -10,10 +10,12 @@ export default function ClientsPage() {
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
+  const claimJobNumber = useClaimJobNumber();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [actionError, setActionError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleCreate = () => {
     setSelectedClient(null);
@@ -43,20 +45,30 @@ export default function ClientsPage() {
   };
 
   const handleDelete = async (client) => {
-    if (client.project_count > 0) {
-      if (!confirm(`Client "${client.name}" has ${client.project_count} project(s). Are you sure you want to delete it? All associated projects will also be deleted.`)) {
-        return;
-      }
-    } else {
-      if (!confirm(`Are you sure you want to delete client "${client.name}"?`)) {
-        return;
-      }
+    if (!confirm(`Are you sure you want to delete client "${client.name}"?`)) {
+      return;
     }
 
     try {
       await deleteClient.mutateAsync(client.id);
     } catch (error) {
       alert(`Error deleting client: ${error.message}`);
+    }
+  };
+
+  const handleClaim = async (client) => {
+    try {
+      const result = await claimJobNumber.mutateAsync(client.id);
+      const jobNumber = result.jobNumber;
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(jobNumber);
+
+      // Show success message
+      setSuccessMessage(`Job number ${jobNumber} copied to clipboard!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      alert(`Error claiming job number: ${error.message}`);
     }
   };
 
@@ -81,7 +93,7 @@ export default function ClientsPage() {
   return (
     <div>
       <div className="flex-between mb-2">
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Clients</h2>
+        <div></div>
         <button className="btn btn-primary" onClick={handleCreate}>
           + New Client
         </button>
@@ -93,10 +105,17 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {successMessage && (
+        <div className="card mb-1" style={{ backgroundColor: '#d1fae5', borderColor: '#a7f3d0' }}>
+          <p style={{ color: '#065f46', margin: 0 }}>{successMessage}</p>
+        </div>
+      )}
+
       <ClientList
         clients={clients}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onClaim={handleClaim}
       />
 
       {modalOpen && (
