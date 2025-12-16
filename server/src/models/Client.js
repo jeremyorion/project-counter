@@ -39,30 +39,54 @@ class Client {
   }
 
   static update(id, { code, name, currentCounter }) {
-    const client = this.getById(id);
-    if (!client) {
-      throw new Error('Client not found');
-    }
-
-    const upperCode = code ? code.toUpperCase() : client.code;
-    const updatedName = name || client.name;
-    const updatedCounter = currentCounter !== undefined ? currentCounter : client.current_counter;
-
-    const stmt = db.prepare(`
-      UPDATE clients
-      SET code = ?, name = ?, current_counter = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-
-    try {
-      stmt.run(upperCode, updatedName, updatedCounter, id);
-      return this.getById(id);
-    } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-        throw new Error(`Client code '${upperCode}' already exists`);
+    return db.transaction(() => {
+      const client = this.getById(id);
+      if (!client) {
+        throw new Error('Client not found');
       }
-      throw error;
-    }
+
+      const upperCode = code ? code.toUpperCase() : client.code;
+      const updatedName = name || client.name;
+      const updatedCounter = currentCounter !== undefined ? currentCounter : client.current_counter;
+
+      // Track what changed
+      const changes = [];
+      if (upperCode !== client.code) {
+        changes.push(`Code: ${client.code} → ${upperCode}`);
+      }
+      if (updatedName !== client.name) {
+        changes.push(`Name: ${client.name} → ${updatedName}`);
+      }
+      if (updatedCounter !== client.current_counter) {
+        changes.push(`Last Job Number: ${client.current_counter} → ${updatedCounter}`);
+      }
+
+      const stmt = db.prepare(`
+        UPDATE clients
+        SET code = ?, name = ?, current_counter = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+
+      try {
+        stmt.run(upperCode, updatedName, updatedCounter, id);
+
+        // Log the changes if any were made
+        if (changes.length > 0) {
+          const logStmt = db.prepare(`
+            INSERT INTO client_edit_log (client_id, client_code, client_name, change_description)
+            VALUES (?, ?, ?, ?)
+          `);
+          logStmt.run(id, upperCode, updatedName, changes.join('; '));
+        }
+
+        return this.getById(id);
+      } catch (error) {
+        if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+          throw new Error(`Client code '${upperCode}' already exists`);
+        }
+        throw error;
+      }
+    })();
   }
 
   static delete(id) {

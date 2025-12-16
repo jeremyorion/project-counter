@@ -55,7 +55,7 @@ export default function App() {
                 style={tabStyle('claim-log')}
                 onClick={() => setActiveTab('claim-log')}
               >
-                Claim Log
+                Activity Log
               </button>
             </div>
           </nav>

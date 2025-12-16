@@ -3,25 +3,25 @@ import { format } from 'date-fns';
 
 export default function ClaimLogPage() {
   const { data: claimLogResponse, isLoading, error } = useClaimLog();
-  const claimLog = claimLogResponse || [];
+  const activityLog = claimLogResponse || [];
 
   if (isLoading) {
-    return <div className="loading">Loading claim log...</div>;
+    return <div className="loading">Loading activity log...</div>;
   }
 
   if (error) {
     return (
       <div className="card" style={{ backgroundColor: '#fee2e2', borderColor: '#fca5a5' }}>
-        <p style={{ color: '#991b1b' }}>Error loading claim log: {error.message}</p>
+        <p style={{ color: '#991b1b' }}>Error loading activity log: {error.message}</p>
       </div>
     );
   }
 
-  if (claimLog.length === 0) {
+  if (activityLog.length === 0) {
     return (
       <div className="empty-state">
-        <h3>No claimed job numbers yet</h3>
-        <p>Claim your first job number to see it here</p>
+        <h3>No activity yet</h3>
+        <p>Claim job numbers or edit clients to see activity here</p>
       </div>
     );
   }
@@ -31,18 +31,23 @@ export default function ClaimLogPage() {
       <table>
         <thead>
           <tr>
-            <th>Job Number</th>
+            <th>Activity</th>
             <th>Client</th>
-            <th>Claimed At</th>
+            <th>Details</th>
+            <th>Date & Time</th>
           </tr>
         </thead>
         <tbody>
-          {claimLog.map((entry) => (
-            <tr key={entry.id}>
+          {activityLog.map((entry, index) => (
+            <tr key={`${entry.activity_type}-${entry.id}-${index}`}>
               <td>
-                <strong style={{ color: 'var(--primary-color)' }}>
-                  {entry.job_number}
-                </strong>
+                {entry.activity_type === 'claim' ? (
+                  <span className="badge badge-active">Claim</span>
+                ) : (
+                  <span className="badge" style={{ backgroundColor: '#e0e7ff', color: '#3730a3' }}>
+                    Edit
+                  </span>
+                )}
               </td>
               <td>
                 <span style={{ fontSize: '0.8125rem', color: 'var(--gray-600)' }}>
@@ -50,8 +55,19 @@ export default function ClaimLogPage() {
                 </span>
                 <div style={{ fontSize: '0.8125rem' }}>{entry.client_name}</div>
               </td>
+              <td>
+                {entry.activity_type === 'claim' ? (
+                  <strong style={{ color: 'var(--primary-color)' }}>
+                    {entry.job_number}
+                  </strong>
+                ) : (
+                  <span style={{ fontSize: '0.875rem', color: 'var(--gray-700)' }}>
+                    {entry.change_description}
+                  </span>
+                )}
+              </td>
               <td style={{ fontSize: '0.875rem', color: 'var(--gray-600)' }}>
-                {format(new Date(entry.claimed_at), 'MMM d, yyyy h:mm a')}
+                {format(new Date(entry.activity_at), 'MMM d, yyyy h:mm a')}
               </td>
             </tr>
           ))}

@@ -25,6 +25,21 @@ CREATE TABLE IF NOT EXISTS claim_log (
 CREATE INDEX IF NOT EXISTS idx_claim_log_client_id ON claim_log(client_id);
 CREATE INDEX IF NOT EXISTS idx_claim_log_claimed_at ON claim_log(claimed_at DESC);
 
+-- Client edit log table: stores history of client edits
+CREATE TABLE IF NOT EXISTS client_edit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL,
+    client_code VARCHAR(4) NOT NULL,
+    client_name VARCHAR(255) NOT NULL,
+    change_description TEXT NOT NULL,
+    edited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+);
+
+-- Index for fast lookups by client and date
+CREATE INDEX IF NOT EXISTS idx_client_edit_log_client_id ON client_edit_log(client_id);
+CREATE INDEX IF NOT EXISTS idx_client_edit_log_edited_at ON client_edit_log(edited_at DESC);
+
 -- Projects table: stores project information with auto-generated job numbers
 CREATE TABLE IF NOT EXISTS projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
