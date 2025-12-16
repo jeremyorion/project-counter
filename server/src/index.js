@@ -16,8 +16,8 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: CORS_ORIGIN,
-  credentials: true
+  origin: CORS_ORIGIN === '*' ? '*' : CORS_ORIGIN,
+  credentials: CORS_ORIGIN !== '*'
 }));
 app.use(morgan('dev'));
 app.use(express.json());

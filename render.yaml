@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: project-counter-api
+    runtime: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/project-counter.db
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: '*'
+    disk:
+      name: project-counter-data
+      mountPath: /data
+      sizeGB: 1
