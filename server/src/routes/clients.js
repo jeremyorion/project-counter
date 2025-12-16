@@ -18,6 +18,23 @@ const validateClient = [
     .withMessage('Client name is required and must be less than 255 characters')
 ];
 
+const validateClientUpdate = [
+  body('code')
+    .trim()
+    .isLength({ min: 3, max: 3 })
+    .withMessage('Client code must be exactly 3 characters')
+    .matches(/^[A-Z]{3}$/i)
+    .withMessage('Client code must contain only letters'),
+  body('name')
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage('Client name is required and must be less than 255 characters'),
+  body('currentCounter')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Last job number must be a non-negative integer')
+];
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -100,12 +117,12 @@ router.post('/', validateClient, handleValidationErrors, (req, res) => {
 router.put(
   '/:id',
   param('id').isInt(),
-  validateClient,
+  validateClientUpdate,
   handleValidationErrors,
   (req, res) => {
     try {
-      const { code, name } = req.body;
-      const client = Client.update(req.params.id, { code, name });
+      const { code, name, currentCounter } = req.body;
+      const client = Client.update(req.params.id, { code, name, currentCounter });
       res.json({
         success: true,
         data: client,
