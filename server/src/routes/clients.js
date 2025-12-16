@@ -8,9 +8,9 @@ const router = express.Router();
 const validateClient = [
   body('code')
     .trim()
-    .isLength({ min: 3, max: 3 })
-    .withMessage('Client code must be exactly 3 characters')
-    .matches(/^[A-Z]{3}$/i)
+    .isLength({ min: 3, max: 4 })
+    .withMessage('Client code must be 3-4 characters')
+    .matches(/^[A-Z]{3,4}$/i)
     .withMessage('Client code must contain only letters'),
   body('name')
     .trim()
@@ -21,9 +21,9 @@ const validateClient = [
 const validateClientUpdate = [
   body('code')
     .trim()
-    .isLength({ min: 3, max: 3 })
-    .withMessage('Client code must be exactly 3 characters')
-    .matches(/^[A-Z]{3}$/i)
+    .isLength({ min: 3, max: 4 })
+    .withMessage('Client code must be 3-4 characters')
+    .matches(/^[A-Z]{3,4}$/i)
     .withMessage('Client code must contain only letters'),
   body('name')
     .trim()

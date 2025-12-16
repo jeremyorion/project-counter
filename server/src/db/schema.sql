@@ -1,7 +1,7 @@
 -- Clients table: stores client information and tracks job number counter
 CREATE TABLE IF NOT EXISTS clients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    code VARCHAR(3) UNIQUE NOT NULL,
+    code VARCHAR(4) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     current_counter INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

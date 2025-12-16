@@ -13,9 +13,9 @@ export default function ClientForm({ client, onSubmit, onCancel }) {
 
     if (!formData.code) {
       newErrors.code = 'Client code is required';
-    } else if (formData.code.length !== 3) {
-      newErrors.code = 'Client code must be exactly 3 characters';
-    } else if (!/^[A-Z]{3}$/i.test(formData.code)) {
+    } else if (formData.code.length < 3 || formData.code.length > 4) {
+      newErrors.code = 'Client code must be 3-4 characters';
+    } else if (!/^[A-Z]{3,4}$/i.test(formData.code)) {
       newErrors.code = 'Client code must contain only letters';
     }
 
@@ -71,13 +71,13 @@ export default function ClientForm({ client, onSubmit, onCancel }) {
           name="code"
           value={formData.code}
           onChange={handleChange}
-          maxLength={3}
-          placeholder="e.g., INS, PON"
+          maxLength={4}
+          placeholder="e.g., INS, PONT"
           style={{ textTransform: 'uppercase' }}
         />
         {errors.code && <div className="error">{errors.code}</div>}
         <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.25rem' }}>
-          3-letter code (uppercase)
+          3-4 letter code (uppercase)
         </div>
       </div>
 
